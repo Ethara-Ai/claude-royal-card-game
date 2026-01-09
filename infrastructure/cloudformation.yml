@@ -1,0 +1,323 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Card Trick Game - Static Website Hosting with S3 and CloudFront'
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: Domain name for the website (optional)
+    Default: ''
+
+  Environment:
+    Type: String
+    Description: Environment name
+    Default: production
+    AllowedValues:
+      - production
+      - staging
+      - development
+
+Conditions:
+  HasDomainName: !Not [!Equals [!Ref DomainName, '']]
+
+Resources:
+  # S3 Bucket for static website content
+  WebsiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'card-game-${Environment}-${AWS::AccountId}'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldVersions
+            Status: Enabled
+            NoncurrentVersionExpirationInDays: 30
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Application
+          Value: CardTrickGame
+
+  # S3 Bucket Policy for CloudFront access
+  WebsiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref WebsiteBucket
+      PolicyDocument:
+        Statement:
+          - Sid: AllowCloudFrontOAI
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOAI}'
+            Action: 's3:GetObject'
+            Resource: !Sub '${WebsiteBucket.Arn}/*'
+
+  # CloudFront Origin Access Identity
+  CloudFrontOAI:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Sub 'OAI for ${Environment} card game'
+
+  # CloudFront Distribution
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: !Sub 'Card Trick Game - ${Environment}'
+        DefaultRootObject: index.html
+        Aliases: !If
+          - HasDomainName
+          - [!Ref DomainName]
+          - !Ref AWS::NoValue
+        Origins:
+          - Id: S3Origin
+            DomainName: !GetAtt WebsiteBucket.RegionalDomainName
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${CloudFrontOAI}'
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          Compress: true
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+          MinTTL: 0
+          DefaultTTL: 86400  # 1 day
+          MaxTTL: 31536000   # 1 year
+          ResponseHeadersPolicyId: !Ref ResponseHeadersPolicy
+        CacheBehaviors:
+          # Don't cache HTML files
+          - PathPattern: '*.html'
+            TargetOriginId: S3Origin
+            ViewerProtocolPolicy: redirect-to-https
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            CachedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            Compress: true
+            ForwardedValues:
+              QueryString: false
+              Cookies:
+                Forward: none
+            MinTTL: 0
+            DefaultTTL: 0
+            MaxTTL: 0
+            ResponseHeadersPolicyId: !Ref ResponseHeadersPolicy
+          # Cache static assets with fingerprinting for 1 year
+          - PathPattern: '/assets/*'
+            TargetOriginId: S3Origin
+            ViewerProtocolPolicy: redirect-to-https
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            CachedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            Compress: true
+            ForwardedValues:
+              QueryString: false
+              Cookies:
+                Forward: none
+            MinTTL: 31536000
+            DefaultTTL: 31536000
+            MaxTTL: 31536000
+            ResponseHeadersPolicyId: !Ref ResponseHeadersPolicy
+        CustomErrorResponses:
+          # SPA routing - return index.html for 404s
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 300
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 300
+        PriceClass: PriceClass_100  # Use only North America and Europe edge locations
+        ViewerCertificate: !If
+          - HasDomainName
+          - AcmCertificateArn: !Ref CertificateArn
+            SslSupportMethod: sni-only
+            MinimumProtocolVersion: TLSv1.2_2021
+          - CloudFrontDefaultCertificate: true
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Application
+          Value: CardTrickGame
+
+  # Response Headers Policy for security and performance
+  ResponseHeadersPolicy:
+    Type: AWS::CloudFront::ResponseHeadersPolicy
+    Properties:
+      ResponseHeadersPolicyConfig:
+        Name: !Sub 'card-game-${Environment}-security-headers'
+        Comment: Security and performance headers for Card Trick Game
+        SecurityHeadersConfig:
+          StrictTransportSecurity:
+            AccessControlMaxAgeSec: 31536000
+            IncludeSubdomains: true
+            Preload: true
+            Override: true
+          ContentTypeOptions:
+            Override: true
+          FrameOptions:
+            FrameOption: DENY
+            Override: true
+          XSSProtection:
+            ModeBlock: true
+            Protection: true
+            Override: true
+          ReferrerPolicy:
+            ReferrerPolicy: strict-origin-when-cross-origin
+            Override: true
+          ContentSecurityPolicy:
+            ContentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none';"
+            Override: true
+        CustomHeadersConfig:
+          Items:
+            - Header: Permissions-Policy
+              Value: 'geolocation=(), microphone=(), camera=()'
+              Override: true
+            - Header: Cache-Control
+              Value: 'public, max-age=31536000, immutable'
+              Override: false
+
+  # IAM Role for GitHub Actions OIDC
+  GitHubActionsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'card-game-${Environment}-github-actions'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !Sub 'arn:aws:iam::${AWS::AccountId}:oidc-provider/token.actions.githubusercontent.com'
+            Action: 'sts:AssumeRoleWithWebIdentity'
+            Condition:
+              StringEquals:
+                'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com'
+              StringLike:
+                'token.actions.githubusercontent.com:sub': 'repo:YOUR_GITHUB_USERNAME/YOUR_REPO_NAME:*'
+      ManagedPolicyArns:
+        - !Ref GitHubActionsPolicy
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Application
+          Value: CardTrickGame
+
+  # IAM Policy for GitHub Actions
+  GitHubActionsPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Sub 'card-game-${Environment}-deploy-policy'
+      Description: Policy for GitHub Actions to deploy Card Trick Game
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          # S3 Permissions
+          - Sid: S3BucketAccess
+            Effect: Allow
+            Action:
+              - 's3:ListBucket'
+              - 's3:GetBucketLocation'
+            Resource: !GetAtt WebsiteBucket.Arn
+          - Sid: S3ObjectAccess
+            Effect: Allow
+            Action:
+              - 's3:PutObject'
+              - 's3:PutObjectAcl'
+              - 's3:GetObject'
+              - 's3:DeleteObject'
+            Resource: !Sub '${WebsiteBucket.Arn}/*'
+          # CloudFront Permissions
+          - Sid: CloudFrontInvalidation
+            Effect: Allow
+            Action:
+              - 'cloudfront:CreateInvalidation'
+              - 'cloudfront:GetInvalidation'
+              - 'cloudfront:ListInvalidations'
+            Resource: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}'
+          # CloudFront List (needed for invalidation)
+          - Sid: CloudFrontList
+            Effect: Allow
+            Action:
+              - 'cloudfront:ListDistributions'
+            Resource: '*'
+
+  # Certificate parameter (if using custom domain)
+  CertificateArn:
+    Type: String
+    Description: ACM Certificate ARN for HTTPS (must be in us-east-1)
+    Default: ''
+
+Outputs:
+  BucketName:
+    Description: S3 Bucket name
+    Value: !Ref WebsiteBucket
+    Export:
+      Name: !Sub '${AWS::StackName}-BucketName'
+
+  BucketArn:
+    Description: S3 Bucket ARN
+    Value: !GetAtt WebsiteBucket.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-BucketArn'
+
+  CloudFrontDistributionId:
+    Description: CloudFront Distribution ID
+    Value: !Ref CloudFrontDistribution
+    Export:
+      Name: !Sub '${AWS::StackName}-DistributionId'
+
+  CloudFrontDomainName:
+    Description: CloudFront Distribution Domain Name
+    Value: !GetAtt CloudFrontDistribution.DomainName
+    Export:
+      Name: !Sub '${AWS::StackName}-DomainName'
+
+  CloudFrontURL:
+    Description: CloudFront URL
+    Value: !Sub 'https://${CloudFrontDistribution.DomainName}'
+    Export:
+      Name: !Sub '${AWS::StackName}-URL'
+
+  GitHubActionsRoleArn:
+    Description: IAM Role ARN for GitHub Actions
+    Value: !GetAtt GitHubActionsRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-GitHubActionsRoleArn'
+
+  WebsiteURL:
+    Description: Website URL
+    Value: !If
+      - HasDomainName
+      - !Sub 'https://${DomainName}'
+      - !Sub 'https://${CloudFrontDistribution.DomainName}'

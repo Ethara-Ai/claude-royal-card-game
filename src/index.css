@@ -1,0 +1,244 @@
+@import "tailwindcss";
+
+@layer base {
+    body {
+        @apply antialiased;
+        font-family:
+            -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+            "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+            sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    button,
+    a {
+        @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 focus-visible:ring-offset-2;
+    }
+}
+
+/* Custom utility classes */
+.safe-area-inset {
+    padding-top: env(safe-area-inset-top);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+}
+
+.safe-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+}
+
+.safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+.card-shadow {
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.3),
+        0 2px 4px -1px rgba(0, 0, 0, 0.2);
+}
+
+.table-shadow {
+    box-shadow:
+        inset 0 2px 10px rgba(0, 0, 0, 0.3),
+        0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.glow-gold {
+    box-shadow:
+        0 0 20px rgba(251, 191, 36, 0.6),
+        0 0 40px rgba(251, 191, 36, 0.3);
+}
+
+.text-stroke {
+    -webkit-text-stroke: 1px rgba(0, 0, 0, 0.5);
+    paint-order: stroke fill;
+}
+
+/* Animations */
+@keyframes cardDeal {
+    0% {
+        transform: translateY(-100vh) rotate(0deg);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+@keyframes cardPlay {
+    0% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes cardWin {
+    0%,
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 rgba(251, 191, 36, 0);
+    }
+    50% {
+        transform: scale(1.1);
+        box-shadow: 0 0 30px rgba(251, 191, 36, 0.8);
+    }
+}
+
+@keyframes lift {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-20px);
+    }
+}
+
+@keyframes pulseGold {
+    0%,
+    100% {
+        box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(251, 191, 36, 1);
+    }
+}
+
+.animate-card-deal {
+    animation: cardDeal 0.5s ease-out;
+}
+
+.animate-card-play {
+    animation: cardPlay 0.4s ease-out;
+}
+
+.animate-card-win {
+    animation: cardWin 0.6s ease-in-out;
+}
+
+.animate-lift {
+    animation: lift 0.2s ease-out;
+}
+
+.animate-pulse-gold {
+    animation: pulseGold 1s ease-in-out infinite;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .card {
+        border: 3px solid currentColor !important;
+    }
+
+    button {
+        border: 2px solid currentColor !important;
+    }
+}
+
+/* Focus visible for accessibility */
+:focus-visible {
+    outline: 3px solid #fbbf24;
+    outline-offset: 2px;
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+/* Theme transitions */
+.theme-transition {
+    transition:
+        background-color 0.3s ease,
+        color 0.3s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .theme-transition {
+        transition: none;
+    }
+}
+
+/* Screen reader only */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Casino color scheme */
+@theme {
+    --color-casino-dark-50: #f0f4f8;
+    --color-casino-dark-100: #d9e2ec;
+    --color-casino-dark-200: #bcccdc;
+    --color-casino-dark-300: #9fb3c8;
+    --color-casino-dark-400: #829ab1;
+    --color-casino-dark-500: #627d98;
+    --color-casino-dark-600: #486581;
+    --color-casino-dark-700: #334e68;
+    --color-casino-dark-800: #243b53;
+    --color-casino-dark-900: #102a43;
+
+    --color-casino-green-50: #e3f9e5;
+    --color-casino-green-100: #c1f2c7;
+    --color-casino-green-200: #91e697;
+    --color-casino-green-300: #51ca58;
+    --color-casino-green-400: #31b237;
+    --color-casino-green-500: #18981d;
+    --color-casino-green-600: #0f8613;
+    --color-casino-green-700: #0c6f0f;
+    --color-casino-green-800: #0a5c0d;
+    --color-casino-green-900: #08490a;
+
+    --color-casino-gold-50: #fffbeb;
+    --color-casino-gold-100: #fef3c7;
+    --color-casino-gold-200: #fde68a;
+    --color-casino-gold-300: #fcd34d;
+    --color-casino-gold-400: #fbbf24;
+    --color-casino-gold-500: #f59e0b;
+    --color-casino-gold-600: #d97706;
+    --color-casino-gold-700: #b45309;
+    --color-casino-gold-800: #92400e;
+    --color-casino-gold-900: #78350f;
+}

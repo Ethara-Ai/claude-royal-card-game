@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- Primary Meta Tags -->
+    <title>Card Trick Game - Win Tricks and Outscore Your Opponents</title>
+    <meta name="title" content="Card Trick Game - Win Tricks and Outscore Your Opponents" />
+    <meta name="description" content="Play an exciting trick-taking card game against three AI opponents. Choose your game mode, win tricks, and score points in this beautifully designed casino-style card game." />
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#102a43" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f0f4f8" media="(prefers-color-scheme: light)" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://cardtrickgame.com/" />
+    <meta property="og:title" content="Card Trick Game - Win Tricks and Outscore Your Opponents" />
+    <meta property="og:description" content="Play an exciting trick-taking card game against three AI opponents. Choose your game mode, win tricks, and score points!" />
+    <meta property="og:image" content="/og-image.png" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://cardtrickgame.com/" />
+    <meta property="twitter:title" content="Card Trick Game - Win Tricks and Outscore Your Opponents" />
+    <meta property="twitter:description" content="Play an exciting trick-taking card game against three AI opponents. Choose your game mode, win tricks, and score points!" />
+    <meta property="twitter:image" content="/twitter-image.png" />
+
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- Manifest for PWA -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Preconnect for Performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+
+    <!-- Accessibility -->
+    <meta name="color-scheme" content="light dark" />
+
+    <!-- Prevent zoom on double tap for iOS (but keep pinch zoom) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+
+    <!-- iOS Web App Capable -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Card Tricks" />
+
+    <!-- Microsoft Tiles -->
+    <meta name="msapplication-TileColor" content="#102a43" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
+
+    <style>
+      /* Prevent FOUC (Flash of Unstyled Content) */
+      html {
+        background-color: #102a43;
+      }
+
+      /* Screen reader only class */
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+      }
+
+      /* Loading indicator */
+      #loading {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #fbbf24;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        font-size: 1.5rem;
+        font-weight: bold;
+      }
+
+      /* Loading spinner */
+      .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(251, 191, 36, 0.3);
+        border-top-color: #fbbf24;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1rem;
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/js/index-Cj79Mawg.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/js/react-vendor-DF3nNwgj.js">
+    <link rel="modulepreload" crossorigin href="/assets/js/ui-vendor-CAPH1AVW.js">
+    <link rel="modulepreload" crossorigin href="/assets/js/confetti-CmMw2nZH.js">
+    <link rel="stylesheet" crossorigin href="/assets/css/index-CvDUZQGx.css">
+  </head>
+  <body>
+    <noscript>
+      <div style="
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: white;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        padding: 2rem;
+        background: rgba(0, 0, 0, 0.8);
+        border-radius: 1rem;
+        max-width: 90%;
+      ">
+        <h1 style="color: #fbbf24; margin-bottom: 1rem;">JavaScript Required</h1>
+        <p></p>This game requires JavaScript to be enabled in your browser.</p>
+        <p>Please enable JavaScript and refresh the page.</p>
+      </div>
+    </noscript>
+
+    <!-- Loading indicator -->
+    <div id="loading" aria-live="polite" aria-label="Loading game">
+      <div class="spinner" role="status" aria-hidden="true"></div>
+      <div>Loading Card Trick Game...</div>
+    </div>
+
+    <!-- Main app container -->
+    <div id="root"></div>
+
+    <!-- Remove loading indicator once React app loads -->
+    <script>
+      window.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+          var loading = document.getElementById('loading');
+          if (loading && document.getElementById('root').children.length > 0) {
+            loading.style.display = 'none';
+          }
+        }, 100);
+      });
+    </script>
+
+  </body>
+</html>
