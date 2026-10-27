@@ -257,10 +257,6 @@ src/__tests__/
 └── services/        # Service tests
 ```
 
-## 📝 License
-
-MIT License - feel free to use this project for learning or as a starting point for your own card game!
-
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
