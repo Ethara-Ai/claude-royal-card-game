@@ -289,3 +289,9 @@ For issues, questions, or suggestions, please open an issue on GitHub.
 ---
 
 Built with ❤️ and lots of ♠️♥️♦️♣️
+
+---
+
+## Copyright
+
+Copyright (c) 2026 Green Rider Technology LLP (Ethara AI). All rights reserved.
